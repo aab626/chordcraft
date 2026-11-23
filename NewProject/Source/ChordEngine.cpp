@@ -1,7 +1,6 @@
 #include "ChordEngine.h"
 
 #include <algorithm>
-#include <initializer_list>
 #include <iterator>
 
 namespace chordcraft
@@ -13,9 +12,21 @@ constexpr std::array degreesByPitchClass { 1, -1, 2, -1, 3, 4, -1, 5, -1, 6, -1,
 
 struct Voicing
 {
-    std::initializer_list<int> intervals;
     // By default the third, seventh and extensions move up an octave in Abierto.
-    unsigned liftedVoices = 0b1111010;
+    template <std::size_t Size>
+    constexpr Voicing (const int (&pitches)[Size], unsigned lifted = 0b1111010) noexcept
+        : intervalCount (Size), liftedVoices (lifted)
+    {
+        static_assert (Size <= maxVoices);
+        for (std::size_t i = 0; i < Size; ++i)
+            intervals[i] = pitches[i];
+    }
+
+    // Keep the intervals by value. MSVC can zero the backing arrays of nested initializer lists in constexpr tables.
+    static constexpr std::size_t maxVoices = 7;
+    std::array<int, maxVoices> intervals {};
+    std::size_t intervalCount;
+    unsigned liftedVoices;
 };
 
 constexpr Voicing major { { 0, 4, 7 } };
@@ -88,9 +99,9 @@ Chord makeChord (int inputNote, int base, ScaleMode mode, int complexity, Amplit
     const auto& voicing = voicings[degree - 1][complexity - 1];
     const auto spreadVoices = amplitude == Amplitude::open || amplitude == Amplitude::wide;
 
-    unsigned voice = 0;
-    for (const auto interval : voicing.intervals)
+    for (std::size_t voice = 0; voice < voicing.intervalCount; ++voice)
     {
+        const auto interval = voicing.intervals[voice];
         auto note = root + interval;
         if (amplitude == Amplitude::cluster)
             note = root + interval % 12;
@@ -101,8 +112,6 @@ Chord makeChord (int inputNote, int base, ScaleMode mode, int complexity, Amplit
 
         if (note <= 127)
             chord.notes[chord.size++] = note;
-
-        ++voice;
     }
 
     const auto first = chord.notes.begin();

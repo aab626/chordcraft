@@ -55,6 +55,15 @@ En `NewProject/Builds/MacOSX/build/Release/` quedan `ChordCraft.vst3` y `ChordCr
 
 1. Abre **Options → Preferences → Plug-ins → VST**, comprueba que esté la ruta donde dejaste `ChordCraft.vst3` y vuelve a escanear.
 2. En una pista con un ítem MIDI, inserta `VST3: ChordCraft` primero y un instrumento como `ReaSynth` después. ChordCraft genera notas MIDI y el instrumento las convierte en audio.
-3. Con base **Do**, modo **Mayor**, amplitud **Cerrado** y complejidad **1**, reproduce la nota MIDI 60 (Do). Debería sonar un acorde de Do mayor. Cambia la complejidad para comprobar que cambia el acorde.
+3. Con base **Do**, modo **Mayor** y amplitud **Cerrado**, reproduce la nota MIDI 60 (Do). En complejidad **1** deberían salir las notas MIDI 60, 64 y 67. En complejidad **5** deberían salir 60, 64, 67, 71, 74 y 81.
 
 Si ChordCraft aparece en la lista pero no se oye el acorde, revisa el menú **MIDI output** del FX. Selecciona **Replaces MIDI bus (default)** para enviar el acorde al instrumento en la misma cadena.
+
+Si en Windows solo sale la nota base o sus octavas, puedes probar el motor por separado con el mismo compilador. Ejecuta estos comandos en **x64 Native Tools Command Prompt for VS 2022**, desde la raíz del repo después de generar la solución.
+
+```bat
+cl /nologo /std:c++17 /EHsc /O2 /DNDEBUG /FoNewProject\Builds\VisualStudio2022\ /FeNewProject\Builds\VisualStudio2022\ChordEngineTests.exe NewProject\Source\ChordEngine.cpp NewProject\Tests\ChordEngineTests.cpp
+NewProject\Builds\VisualStudio2022\ChordEngineTests.exe
+```
+
+La prueba solo imprime detalles cuando alguna secuencia de notas no coincide con la esperada.
