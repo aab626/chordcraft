@@ -13,8 +13,6 @@ namespace
 {
 const juce::Colour background { 0xffebece5 };
 const juce::Colour panel { 0xfffdfdf9 };
-const juce::Colour surface { 0xfff2f5ef };
-const juce::Colour activeSurface { 0xffe5efe7 };
 const juce::Colour border { 0xffd5dcd2 };
 const juce::Colour ink { 0xff1c2923 };
 const juce::Colour mutedInk { 0xff526358 };
@@ -45,69 +43,13 @@ void configureKnob (juce::Slider& knob, const juce::String& title, const juce::S
 } // namespace
 
 //==============================================================================
-NewProjectAudioProcessorEditor::EditorLookAndFeel::EditorLookAndFeel()
+void NewProjectAudioProcessorEditor::Knob::paintOverChildren (juce::Graphics& g)
 {
-    setColour (juce::ComboBox::textColourId, ink);
-    setColour (juce::PopupMenu::backgroundColourId, panel);
-    setColour (juce::PopupMenu::textColourId, ink);
-    setColour (juce::PopupMenu::highlightedBackgroundColourId, accent);
-    setColour (juce::PopupMenu::highlightedTextColourId, juce::Colours::white);
-    setColour (juce::TooltipWindow::backgroundColourId, ink);
-    setColour (juce::TooltipWindow::textColourId, juce::Colours::white);
-    setColour (juce::TooltipWindow::outlineColourId, ink);
-}
-
-void NewProjectAudioProcessorEditor::EditorLookAndFeel::drawRotarySlider (
-    juce::Graphics& g, int x, int y, int width, int height,
-    float position, float startAngle, float endAngle, juce::Slider& knob)
-{
-    const juce::Rectangle<float> bounds (static_cast<float> (x), static_cast<float> (y),
-                                        static_cast<float> (width), static_cast<float> (height));
-    const auto centre = bounds.getCentre().translated (0.0f, 4.0f);
-    const auto radius = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.34f;
-    const auto angle = juce::jmap (position, startAngle, endAngle);
-    const auto steps = juce::roundToInt ((knob.getMaximum() - knob.getMinimum()) / knob.getInterval());
-    const auto selected = juce::roundToInt (position * static_cast<float> (steps));
-
-    for (int i = 0; i <= steps; ++i)
+    if (hasKeyboardFocus (false))
     {
-        const auto tickAngle = juce::jmap (static_cast<float> (i) / static_cast<float> (steps), startAngle, endAngle);
-        g.setColour (i == selected ? accent : mutedInk);
-        g.drawLine ({ centre.getPointOnCircumference (radius + 8.0f, tickAngle),
-                      centre.getPointOnCircumference (radius + 14.0f, tickAngle) },
-                    i == selected ? 3.0f : 1.5f);
+        g.setColour (accent);
+        g.drawRoundedRectangle (getLocalBounds().toFloat().reduced (1.0f), 6.0f, 1.5f);
     }
-
-    const auto face = juce::Rectangle<float> (radius * 2.0f, radius * 2.0f).withCentre (centre);
-    g.setColour (border);
-    g.fillEllipse (face.translated (0.0f, 2.0f));
-    g.setColour (knob.isMouseOverOrDragging() ? activeSurface : surface);
-    g.fillEllipse (face);
-    g.setColour (knob.hasKeyboardFocus (false) ? accent : ink);
-    g.drawEllipse (face, 1.5f);
-    g.setColour (accent);
-    g.drawLine ({ centre.getPointOnCircumference (radius * 0.53f, angle),
-                  centre.getPointOnCircumference (radius * 0.80f, angle) }, 3.0f);
-}
-
-void NewProjectAudioProcessorEditor::EditorLookAndFeel::drawComboBox (
-    juce::Graphics& g, int width, int height, bool isButtonDown, int, int, int, int, juce::ComboBox& box)
-{
-    const juce::Rectangle<float> bounds (static_cast<float> (width), static_cast<float> (height));
-    const auto active = isButtonDown || box.isPopupActive() || box.hasKeyboardFocus (true);
-    g.setColour (active ? activeSurface : surface);
-    g.fillRoundedRectangle (bounds, 8.0f);
-    g.setColour (active ? accent : border);
-    g.drawRoundedRectangle (bounds.reduced (0.5f), 8.0f, 1.0f);
-
-    const auto arrowX = bounds.getRight() - 16.0f;
-    const auto arrowY = bounds.getCentreY();
-    juce::Path chevron;
-    chevron.startNewSubPath (arrowX - 4.0f, arrowY - 2.0f);
-    chevron.lineTo (arrowX, arrowY + 2.0f);
-    chevron.lineTo (arrowX + 4.0f, arrowY - 2.0f);
-    g.setColour (accent);
-    g.strokePath (chevron, juce::PathStrokeType (1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 }
 
 //==============================================================================
@@ -180,9 +122,12 @@ void NewProjectAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (background);
     g.setColour (ink);
-    g.setFont (juce::FontOptions (27.0f, juce::Font::bold));
-    g.drawText ("ChordCraft", getLocalBounds().removeFromTop (64).reduced (26, 0),
-                juce::Justification::centredLeft);
+    g.setFont (juce::FontOptions (27.0f, juce::Font::bold).withFallbacks ({ "Apple Color Emoji",
+                                                                         "Segoe UI Emoji",
+                                                                         "Noto Color Emoji",
+                                                                         "Noto Sans Symbols2" }));
+    g.drawText (juce::String::fromUTF8 ("ChordCraft ⛏"), getLocalBounds().removeFromTop (64),
+                juce::Justification::centred);
 
     const auto panelBounds = getPanelBounds().toFloat();
     g.setColour (panel);

@@ -23,26 +23,16 @@ public:
     void resized() override;
 
 private:
-    class EditorLookAndFeel final : public juce::LookAndFeel_V4
-    {
-    public:
-        EditorLookAndFeel();
-
-        void drawRotarySlider (juce::Graphics&, int x, int y, int width, int height,
-                               float position, float startAngle, float endAngle, juce::Slider&) override;
-        void drawComboBox (juce::Graphics&, int width, int height, bool isButtonDown,
-                           int buttonX, int buttonY, int buttonWidth, int buttonHeight, juce::ComboBox&) override;
-    };
-
     class Knob final : public juce::Slider
     {
+        void paintOverChildren (juce::Graphics&) override;
         void focusGained (FocusChangeType) override { repaint(); }
         void focusLost (FocusChangeType) override { repaint(); }
     };
 
     juce::Rectangle<int> getPanelBounds() const;
 
-    EditorLookAndFeel editorLookAndFeel;
+    juce::LookAndFeel_V2 editorLookAndFeel;
 
     juce::Label amplitudeTitle, complexityTitle, scaleTitle;
     Knob amplitudeKnob, complexityKnob;
