@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin processor.
+    This file implements the ChordCraft plugin processor.
 
   ==============================================================================
 */
@@ -9,24 +9,39 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+namespace
+{
+juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+{
+    using Processor = NewProjectAudioProcessor;
+    using Choice = juce::AudioParameterChoice;
+
+    return {
+        std::make_unique<Choice> (juce::ParameterID { Processor::baseParameter, 1 }, "Base",
+                                  juce::StringArray (chordcraft::noteNames.data(), chordcraft::noteNames.size()), 0),
+        std::make_unique<Choice> (juce::ParameterID { Processor::modeParameter, 1 }, "Modo",
+                                  juce::StringArray (chordcraft::modeNames.data(), chordcraft::modeNames.size()), 0),
+        std::make_unique<Choice> (juce::ParameterID { Processor::amplitudeParameter, 1 }, "Amplitud",
+                                  juce::StringArray (chordcraft::amplitudeNames.data(), chordcraft::amplitudeNames.size()),
+                                  static_cast<int> (chordcraft::Amplitude::closed)),
+        std::make_unique<juce::AudioParameterInt> (juce::ParameterID { Processor::complexityParameter, 1 },
+                                                  "Complejidad", 1, 5, 1)
+    };
+}
+} // namespace
+
 //==============================================================================
 NewProjectAudioProcessor::NewProjectAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
-#endif
+    : AudioProcessor (BusesProperties()),
+      parameters (*this, nullptr, "ChordCraft", createParameterLayout()),
+      baseValue (parameters.getRawParameterValue (baseParameter)),
+      modeValue (parameters.getRawParameterValue (modeParameter)),
+      amplitudeValue (parameters.getRawParameterValue (amplitudeParameter)),
+      complexityValue (parameters.getRawParameterValue (complexityParameter))
 {
 }
 
-NewProjectAudioProcessor::~NewProjectAudioProcessor()
-{
-}
+NewProjectAudioProcessor::~NewProjectAudioProcessor() = default;
 
 //==============================================================================
 const juce::String NewProjectAudioProcessor::getName() const
@@ -34,135 +49,104 @@ const juce::String NewProjectAudioProcessor::getName() const
     return JucePlugin_Name;
 }
 
-bool NewProjectAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
+bool NewProjectAudioProcessor::acceptsMidi() const { return JucePlugin_WantsMidiInput != 0; }
+bool NewProjectAudioProcessor::producesMidi() const { return JucePlugin_ProducesMidiOutput != 0; }
+bool NewProjectAudioProcessor::isMidiEffect() const { return JucePlugin_IsMidiEffect != 0; }
+double NewProjectAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 
-bool NewProjectAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool NewProjectAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double NewProjectAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int NewProjectAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int NewProjectAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void NewProjectAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const juce::String NewProjectAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void NewProjectAudioProcessor::changeProgramName (int index, const juce::String& newName)
-{
-}
+int NewProjectAudioProcessor::getNumPrograms() { return 1; }
+int NewProjectAudioProcessor::getCurrentProgram() { return 0; }
+void NewProjectAudioProcessor::setCurrentProgram (int) {}
+const juce::String NewProjectAudioProcessor::getProgramName (int) { return {}; }
+void NewProjectAudioProcessor::changeProgramName (int, const juce::String&) {}
 
 //==============================================================================
-void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void NewProjectAudioProcessor::prepareToPlay (double, int)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    output.ensureSize (16384);
+    reset();
 }
 
-void NewProjectAudioProcessor::releaseResources()
+void NewProjectAudioProcessor::releaseResources() {}
+
+void NewProjectAudioProcessor::reset()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
+    resetPending.store (true, std::memory_order_relaxed);
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
 bool NewProjectAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
-    return true;
-  #endif
+    return layouts.inputBuses.isEmpty() && layouts.outputBuses.isEmpty();
 }
-#endif
 
 void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    output.clear();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    if (buffer.getNumSamples() > 0 && resetPending.exchange (false, std::memory_order_relaxed))
+        stopActiveChord (0);
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    for (const auto event : midiMessages)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        if (event.numBytes == 3)
+        {
+            const auto status = event.data[0] & 0xf0;
+            const auto channel = (event.data[0] & 0x0f) + 1;
 
-        // ..do something to the data...
+            if (status == 0x90 || status == 0x80)
+            {
+                const auto note = event.data[1];
+                if (status == 0x90 && event.data[2] != 0)
+                    triggerChord (note, channel, event.data[2], event.samplePosition);
+                else if (note == activeTriggerNote && channel == activeChannel)
+                    stopActiveChord (event.samplePosition);
+
+                continue;
+            }
+
+            constexpr int allSoundOff = 120;
+            constexpr int allNotesOff = 123;
+            if (status == 0xb0 && channel == activeChannel && (event.data[1] == allSoundOff || event.data[1] == allNotesOff))
+                stopActiveChord (event.samplePosition);
+        }
+
+        output.addEvent (event.data, event.numBytes, event.samplePosition);
     }
+
+    midiMessages.clear();
+    midiMessages.addEvents (output, 0, -1, 0);
+}
+
+void NewProjectAudioProcessor::triggerChord (int note, int channel, juce::uint8 velocity, int samplePosition)
+{
+    if (chordcraft::degreeForMidiNote (note) < 0)
+        return;
+
+    const auto base = static_cast<int> (baseValue->load (std::memory_order_relaxed));
+    const auto mode = static_cast<chordcraft::ScaleMode> (static_cast<int> (modeValue->load (std::memory_order_relaxed)));
+    const auto amplitude = static_cast<chordcraft::Amplitude> (static_cast<int> (amplitudeValue->load (std::memory_order_relaxed)));
+    const auto complexity = static_cast<int> (complexityValue->load (std::memory_order_relaxed));
+
+    stopActiveChord (samplePosition);
+    activeChord = chordcraft::makeChord (note, base, mode, complexity, amplitude);
+    activeTriggerNote = note;
+    activeChannel = channel;
+
+    for (const auto pitch : activeChord)
+        output.addEvent (juce::MidiMessage::noteOn (channel, pitch, velocity), samplePosition);
+}
+
+void NewProjectAudioProcessor::stopActiveChord (int samplePosition)
+{
+    for (const auto pitch : activeChord)
+        output.addEvent (juce::MidiMessage::noteOff (activeChannel, pitch), samplePosition);
+
+    activeChord.size = 0;
+    activeTriggerNote = -1;
 }
 
 //==============================================================================
-bool NewProjectAudioProcessor::hasEditor() const
-{
-    return true; // (change this to false if you choose to not supply an editor)
-}
+bool NewProjectAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* NewProjectAudioProcessor::createEditor()
 {
@@ -172,19 +156,17 @@ juce::AudioProcessorEditor* NewProjectAudioProcessor::createEditor()
 //==============================================================================
 void NewProjectAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    if (const auto xml = parameters.copyState().createXml())
+        copyXmlToBinary (*xml, destData);
 }
 
 void NewProjectAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    const auto xml = getXmlFromBinary (data, sizeInBytes);
+    if (xml != nullptr && xml->hasTagName (parameters.state.getType()))
+        parameters.replaceState (juce::ValueTree::fromXml (*xml));
 }
 
-//==============================================================================
-// This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new NewProjectAudioProcessor();

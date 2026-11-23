@@ -51,5 +51,8 @@ private:
     juce::ComboBox baseSelector, modeSelector;
     juce::TooltipWindow tooltips { this, 550 };
 
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> amplitudeAttachment, complexityAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> baseAttachment, modeAttachment;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessorEditor)
 };

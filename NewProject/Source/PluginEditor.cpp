@@ -9,8 +9,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#include <array>
-
 namespace
 {
 const juce::Colour background { 0xffebece5 };
@@ -22,10 +20,6 @@ const juce::Colour ink { 0xff1c2923 };
 const juce::Colour mutedInk { 0xff526358 };
 const juce::Colour accent { 0xff17624b };
 
-constexpr std::array amplitudeNames { "Cluster", "Cerrado", "Abierto", "Amplio" };
-constexpr std::array noteNames { "Do", "Do#", "Re", "Re#", "Mi", "Fa",
-                                 "Fa#", "Sol", "Sol#", "La", "La#", "Si" };
-
 void styleLabel (juce::Label& label, const juce::String& text, float size, juce::Colour colour,
                  juce::Justification justification, int style = juce::Font::plain)
 {
@@ -36,16 +30,13 @@ void styleLabel (juce::Label& label, const juce::String& text, float size, juce:
     label.setBorderSize (juce::BorderSize<int> (0));
 }
 
-void configureKnob (juce::Slider& knob, const juce::String& title, const juce::String& tooltip,
-                    int minimum, int maximum, int initialValue)
+void configureKnob (juce::Slider& knob, const juce::String& title, const juce::String& tooltip)
 {
     constexpr auto pi = juce::MathConstants<float>::pi;
     knob.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     knob.setRotaryParameters (1.6f * pi, 2.4f * pi, true);
     knob.setMouseDragSensitivity (120);
     knob.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
-    knob.setRange (minimum, maximum, 1.0);
-    knob.setValue (initialValue, juce::dontSendNotification);
     knob.setTitle (title);
     knob.setTooltip (tooltip);
     knob.setWantsKeyboardFocus (true);
@@ -134,20 +125,9 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     styleLabel (amplitudeValue, {}, 15.0f, accent, juce::Justification::centred, juce::Font::bold);
     styleLabel (complexityValue, {}, 15.0f, accent, juce::Justification::centred, juce::Font::bold);
 
-    constexpr auto maximumAmplitude = static_cast<int> (amplitudeNames.size()) - 1;
-    configureKnob (amplitudeKnob, "Amplitud", "Ajusta la distancia entre las notas del acorde.", 0, maximumAmplitude, 1);
-    amplitudeKnob.textFromValueFunction = [] (double value)
-    {
-        const auto index = juce::jlimit (0, maximumAmplitude, juce::roundToInt (value));
-        return juce::String (amplitudeNames[static_cast<std::size_t> (index)]);
-    };
-
+    configureKnob (amplitudeKnob, "Amplitud", "Ajusta la distancia entre las notas del acorde.");
     configureKnob (complexityKnob, "Complejidad",
-                   juce::String::fromUTF8 ("Ajusta la riqueza armónica del acorde en cinco niveles."), 1, 5, 1);
-    complexityKnob.textFromValueFunction = [] (double value)
-    {
-        return "Nivel " + juce::String (juce::roundToInt (value));
-    };
+                   juce::String::fromUTF8 ("Ajusta la riqueza armónica del acorde en cinco niveles."));
 
     amplitudeKnob.onValueChange = [this]
     {
@@ -155,22 +135,28 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     };
     complexityKnob.onValueChange = [this]
     {
-        complexityValue.setText (complexityKnob.getTextFromValue (complexityKnob.getValue()), juce::dontSendNotification);
+        complexityValue.setText ("Nivel " + juce::String (juce::roundToInt (complexityKnob.getValue())),
+                                 juce::dontSendNotification);
     };
-    amplitudeKnob.onValueChange();
-    complexityKnob.onValueChange();
-
     baseSelector.setTitle ("Base de la escala");
     baseSelector.setTooltip (juce::String::fromUTF8 ("Selecciona la tónica de la escala."));
-    for (std::size_t i = 0; i < noteNames.size(); ++i)
-        baseSelector.addItem (noteNames[i], static_cast<int> (i) + 1);
-    baseSelector.setSelectedId (1, juce::dontSendNotification);
+    for (std::size_t i = 0; i < chordcraft::noteNames.size(); ++i)
+        baseSelector.addItem (chordcraft::noteNames[i], static_cast<int> (i) + 1);
 
     modeSelector.setTitle ("Modo de la escala");
     modeSelector.setTooltip ("Selecciona el modo mayor o menor natural.");
-    modeSelector.addItem ("Mayor", 1);
-    modeSelector.addItem ("Menor", 2);
-    modeSelector.setSelectedId (1, juce::dontSendNotification);
+    for (std::size_t i = 0; i < chordcraft::modeNames.size(); ++i)
+        modeSelector.addItem (chordcraft::modeNames[i], static_cast<int> (i) + 1);
+
+    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+    auto& state = p.getParametersState();
+    amplitudeAttachment = std::make_unique<SliderAttachment> (state, p.amplitudeParameter, amplitudeKnob);
+    complexityAttachment = std::make_unique<SliderAttachment> (state, p.complexityParameter, complexityKnob);
+    baseAttachment = std::make_unique<ComboBoxAttachment> (state, p.baseParameter, baseSelector);
+    modeAttachment = std::make_unique<ComboBoxAttachment> (state, p.modeParameter, modeSelector);
+    amplitudeKnob.onValueChange();
+    complexityKnob.onValueChange();
 
     for (auto* label : { &amplitudeTitle, &complexityTitle, &scaleTitle, &baseTitle, &modeTitle,
                         &amplitudeValue, &complexityValue })

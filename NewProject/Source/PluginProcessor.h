@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "ChordEngine.h"
 
 //==============================================================================
 /**
@@ -23,10 +24,9 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
+    void reset() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
@@ -53,7 +53,29 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    static constexpr auto baseParameter = "base";
+    static constexpr auto modeParameter = "mode";
+    static constexpr auto amplitudeParameter = "amplitude";
+    static constexpr auto complexityParameter = "complexity";
+
+    juce::AudioProcessorValueTreeState& getParametersState() noexcept { return parameters; }
+
 private:
+    void triggerChord (int note, int channel, juce::uint8 velocity, int samplePosition);
+    void stopActiveChord (int samplePosition);
+
+    juce::AudioProcessorValueTreeState parameters;
+    const std::atomic<float>* const baseValue;
+    const std::atomic<float>* const modeValue;
+    const std::atomic<float>* const amplitudeValue;
+    const std::atomic<float>* const complexityValue;
+
+    juce::MidiBuffer output;
+    chordcraft::Chord activeChord;
+    int activeTriggerNote = -1;
+    int activeChannel = 1;
+    std::atomic<bool> resetPending { false };
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)
 };

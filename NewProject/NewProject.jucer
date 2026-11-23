@@ -5,6 +5,8 @@
               pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginProducesMidiOut,pluginWantsMidiIn">
   <MAINGROUP id="U3Derp" name="ChordCraft">
     <GROUP id="{E980B37B-EAD9-9CE3-5F5D-8620F223B9C0}" name="Source">
+      <FILE id="m51xAU" name="ChordEngine.cpp" compile="1" resource="0" file="Source/ChordEngine.cpp"/>
+      <FILE id="wT86kZ" name="ChordEngine.h" compile="0" resource="0" file="Source/ChordEngine.h"/>
       <FILE id="hQ79ue" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="MMz8am" name="PluginProcessor.h" compile="0" resource="0"
