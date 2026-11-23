@@ -1,0 +1,3 @@
+*.jucer text eol=lf
+Source/*.cpp text eol=lf
+Source/*.h text eol=lf
