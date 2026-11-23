@@ -8,6 +8,8 @@ Para probar el VST3 usaremos REAPER. Si usas otro DAW, comprueba que admita la s
 
 Descarga el ZIP de JUCE `9.0.6` para tu sistema (`windows`, `linux` u `osx`) desde **Assets** y extrae la carpeta completa. El ZIP incluye Projucer, la carpeta `modules` y el SDK de VST3. [Descargar JUCE 9.0.6](https://github.com/juce-framework/JUCE/releases/tag/9.0.6).
 
+Los módulos de JUCE se ofrecen bajo AGPLv3 o licencia comercial. Según el uso y la distribución del plugin, puede que necesites una licencia comercial. Revisa `LICENSE.md` de tu copia de JUCE.
+
 ## Requisitos de desarrollo
 
 ### Windows
@@ -24,7 +26,21 @@ Se debería observar la versión del compilador de Microsoft y la ruta a `rc.exe
 
 ### macOS
 
-Instala Xcode completo y ábrelo una vez para aceptar la licencia y completar la configuración inicial. [Descargar Xcode](https://developer.apple.com/xcode/).
+Para [compilar con CMake](build.md#macos-con-cmake-sin-xcode-completo) no necesitas Xcode completo. Instala las Command Line Tools de Apple y CMake; el segundo comando requiere Homebrew. Si las Command Line Tools ya están instaladas, omite el primero.
+
+```bash
+xcode-select --install
+brew install cmake
+```
+
+Comprueba que CMake y el compilador del SDK estén disponibles.
+
+```bash
+cmake --version
+xcrun --sdk macosx --find clang++
+```
+
+Para usar el proyecto de Xcode generado por Projucer, instala Xcode completo y ábrelo una vez para aceptar la licencia y completar la configuración inicial. [Descargar Xcode](https://developer.apple.com/xcode/).
 En Terminal, ejecuta estos comandos:
 
 ```bash
