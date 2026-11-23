@@ -2,18 +2,17 @@
 
 ## Instalación del DAW
 
-Usaremos REAPER para el desarrollo, [descargar desde acá](https://www.reaper.fm/download.php).
-Sin embargo, cualquier DAW compatible con plugins JUCE debería ser compatible.
+Para probar el VST3 usaremos REAPER. Si usas otro DAW, comprueba que admita la salida MIDI de efectos VST3. [Descargar REAPER](https://www.reaper.fm/download.php).
 
 ## JUCE y Projucer
 
-Este proyecto usa JUCE `9.0.6`, descargar desde [GitHub](https://github.com/juce-framework/JUCE/releases/tag/9.0.6) el zip correspondiente a tu sistema.
+Descarga el ZIP de JUCE `9.0.6` para tu sistema (`windows`, `linux` u `osx`) desde **Assets** y extrae la carpeta completa. El ZIP incluye Projucer, la carpeta `modules` y el SDK de VST3. [Descargar JUCE 9.0.6](https://github.com/juce-framework/JUCE/releases/tag/9.0.6).
 
 ## Requisitos de desarrollo
 
 ### Windows
 
-Instala Visual Studio 2022 Community con el workload _Desktop development with C++_. [Descargar Visual Studio 2022](https://visualstudio.microsoft.com/downloads)
+Instala Visual Studio **2022** Community con la carga de trabajo **Desarrollo para el escritorio con C++** (_Desktop development with C++_). Verifica que incluya **MSVC v143 para x64/x86** y un **SDK de Windows 10 u 11**. [Descargar el instalador de Visual Studio 2022](https://aka.ms/vs/17/release/vs_community.exe).
 Una vez instalados, en la terminal **x64 Native Tools Command Prompt for VS 2022** ejecuta estos comandos:
 
 ```bat
@@ -25,7 +24,7 @@ Se debería observar la versión del compilador de Microsoft y la ruta a `rc.exe
 
 ### macOS
 
-Instala Xcode y ábrelo una vez para completar la configuración inicial. [Descargar Xcode](https://developer.apple.com/xcode/)
+Instala Xcode completo y ábrelo una vez para aceptar la licencia y completar la configuración inicial. [Descargar Xcode](https://developer.apple.com/xcode/).
 En Terminal, ejecuta estos comandos:
 
 ```bash
@@ -54,3 +53,5 @@ make --version
 pkg-config --modversion alsa fontconfig freetype2 x11 xcomposite \
   xcursor xext xi xinerama xrandr xrender
 ```
+
+Continúa con la [guía de compilación y prueba](build.md).

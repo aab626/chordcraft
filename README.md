@@ -1,5 +1,6 @@
 # plugin-juce
 
-Plugin desarrollado con JUCE.
+ChordCraft, efecto MIDI desarrollado con JUCE.
 
-[Guía de instalación](docs/install.md)
+- [Instalación del entorno](docs/install.md)
+- [Compilación y prueba en Windows, Linux y macOS](docs/build.md)
