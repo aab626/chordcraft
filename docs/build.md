@@ -2,7 +2,27 @@
 
 El proyecto genera **VST3** y **Standalone** en Windows, Linux y macOS. Compila en el sistema para el que quieras generar el binario. [Requisitos de instalación](install.md).
 
-## Generar los archivos de compilación
+## macOS con CMake, sin Xcode completo
+
+Esta alternativa usa las Command Line Tools de Apple, CMake 3.22 o superior y una copia local de JUCE `9.0.6`. No requiere Projucer ni descarga JUCE automáticamente. [Requisitos de macOS](install.md#macos).
+
+Desde la raíz del repo, reemplaza `/ruta/a/JUCE` por la carpeta extraída que contiene `CMakeLists.txt` y `modules`.
+
+```bash
+cmake -S . -B build -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DJUCE_PATH="/ruta/a/JUCE"
+cmake --build build --parallel 2
+ctest --test-dir build --output-on-failure
+```
+
+Los resultados quedan en `build/ChordCraft_artefacts/Release/VST3/ChordCraft.vst3` y `build/ChordCraft_artefacts/Release/Standalone/ChordCraft.app`. CMake no copia el plugin a las carpetas del DAW. Para instalarlo, cierra el DAW y copia el paquete completo `ChordCraft.vst3` a `~/Library/Audio/Plug-Ins/VST3/`; crea la carpeta si hace falta.
+
+En macOS, CMake aplica una firma ad hoc a ambos paquetes después de generar sus recursos. Sirve para pruebas locales; no es una firma Developer ID ni incluye notarización para distribuirlos.
+
+La compilación usa la arquitectura nativa del equipo. El plugin debe coincidir con la arquitectura del DAW; si necesitas un binario universal, añade `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` al comando de configuración y vuelve a compilar. Las pruebas de CTest comprueban el motor de acordes, no la carga del VST3 ni la interfaz. [Prueba en REAPER](#probar-en-reaper).
+
+## Generar los archivos de compilación con Projucer
 
 1. Abre Projucer desde la carpeta de JUCE `9.0.6`. En **File → Global Paths…** (**Projucer → Global Paths…** en macOS), configura **JUCE Modules** con la ruta a la carpeta `modules` extraída. En Windows puede ser `C:\dev\JUCE\modules`.
 2. Abre `NewProject/NewProject.jucer` desde el clon y guárdalo con **File → Save Project**. Los tres exportadores ya están configurados en ese archivo.
