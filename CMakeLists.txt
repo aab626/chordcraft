@@ -13,7 +13,7 @@ endif()
 
 add_subdirectory("${JUCE_PATH}" "${CMAKE_CURRENT_BINARY_DIR}/JUCE" EXCLUDE_FROM_ALL)
 
-# Conserva los identificadores generados por NewProject.jucer para los DAW.
+# Conserva los identificadores generados por ChordCraft.jucer para los DAW.
 juce_add_plugin(ChordCraft
     COMPANY_NAME "yourcompany"
     COMPANY_WEBSITE "www.yourcompany.com"
@@ -34,12 +34,12 @@ juce_add_plugin(ChordCraft
 juce_generate_juce_header(ChordCraft)
 
 target_sources(ChordCraft PRIVATE
-    NewProject/Source/ChordEngine.cpp
-    NewProject/Source/ChordEngine.h
-    NewProject/Source/PluginEditor.cpp
-    NewProject/Source/PluginEditor.h
-    NewProject/Source/PluginProcessor.cpp
-    NewProject/Source/PluginProcessor.h)
+    chordcraft/Source/ChordEngine.cpp
+    chordcraft/Source/ChordEngine.h
+    chordcraft/Source/PluginEditor.cpp
+    chordcraft/Source/PluginEditor.h
+    chordcraft/Source/PluginProcessor.cpp
+    chordcraft/Source/PluginProcessor.h)
 
 target_compile_features(ChordCraft PUBLIC cxx_std_17)
 set_target_properties(ChordCraft PROPERTIES CXX_EXTENSIONS OFF)
@@ -74,8 +74,8 @@ include(CTest)
 
 if(BUILD_TESTING)
     add_executable(ChordEngineTests
-        NewProject/Source/ChordEngine.cpp
-        NewProject/Tests/ChordEngineTests.cpp)
+        chordcraft/Source/ChordEngine.cpp
+        chordcraft/Tests/ChordEngineTests.cpp)
     target_compile_features(ChordEngineTests PRIVATE cxx_std_17)
     set_target_properties(ChordEngineTests PROPERTIES CXX_EXTENSIONS OFF)
     add_test(NAME ChordEngineTests COMMAND ChordEngineTests)
