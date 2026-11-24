@@ -22,7 +22,7 @@ bool checkChord (const char* description, const chordcraft::Chord& actual, std::
     std::cerr << '\n';
     return false;
 }
-} // namespace
+}
 
 int main()
 {

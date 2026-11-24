@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file defines the ChordCraft plugin editor.
+    Este archivo define el editor del plugin ChordCraft.
 
   ==============================================================================
 */

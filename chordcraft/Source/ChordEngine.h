@@ -23,8 +23,8 @@ struct Chord
     auto end() const noexcept { return notes.begin() + static_cast<std::ptrdiff_t> (size); }
 };
 
-// White keys map to 1..7. Other notes return -1.
+// Las teclas blancas corresponden a los grados del 1 al 7. Para las demás notas, devuelve -1.
 int degreeForMidiNote (int midiNote) noexcept;
 
 Chord makeChord (int inputNote, int base, ScaleMode mode, int complexity, Amplitude amplitude) noexcept;
-} // namespace chordcraft
+}

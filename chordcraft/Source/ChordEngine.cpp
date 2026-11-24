@@ -12,7 +12,7 @@ constexpr std::array degreesByPitchClass { 1, -1, 2, -1, 3, 4, -1, 5, -1, 6, -1,
 
 struct Voicing
 {
-    // By default the third, seventh and extensions move up an octave in Abierto.
+    // En el modo Abierto, la tercera, la séptima y las extensiones suben una octava de forma predeterminada.
     template <std::size_t Size>
     constexpr Voicing (const int (&pitches)[Size], unsigned lifted = 0b1111010) noexcept
         : intervalCount (Size), liftedVoices (lifted)
@@ -22,7 +22,8 @@ struct Voicing
             intervals[i] = pitches[i];
     }
 
-    // Keep the intervals by value. MSVC can zero the backing arrays of nested initializer lists in constexpr tables.
+    // Guarda los intervalos por valor. MSVC puede poner a cero los arreglos subyacentes
+    // de las listas de inicialización anidadas en tablas constexpr.
     static constexpr std::size_t maxVoices = 7;
     std::array<int, maxVoices> intervals {};
     std::size_t intervalCount;
@@ -47,11 +48,11 @@ constexpr Voicing dominant13 { { 0, 4, 7, 10, 14, 21 } };
 constexpr Voicing minor13 { { 0, 3, 7, 10, 14, 17, 21 } };
 constexpr Voicing minor9Add11Add6 { { 0, 3, 7, 9, 10, 14, 17 }, 0b1110010 };
 constexpr Voicing major6Add9 { { 0, 4, 7, 9, 14 }, 0b10010 };
-constexpr Voicing flatMajor7OverBass { { 0, 10, 14, 17, 21 }, 0b10100 }; // Fmaj7/G in C major.
+constexpr Voicing flatMajor7OverBass { { 0, 10, 14, 17, 21 }, 0b10100 }; // Fmaj7/G en do mayor.
 constexpr Voicing dominantFlat9 { { 0, 4, 7, 10, 13 } };
 constexpr Voicing dominantFlat13 { { 0, 4, 7, 10, 20 } };
 
-// Use the diatonic ninth on iii in major and v in natural minor.
+// Usa la novena diatónica sobre el grado iii en el modo mayor y el grado v en el menor natural.
 constexpr Voicing minorFlat9 { { 0, 3, 7, 10, 13 } };
 constexpr Voicing minor11Without9 { { 0, 3, 7, 10, 17 } };
 constexpr Voicing minorFlat9Add11 { { 0, 3, 7, 10, 13, 17 } };
@@ -75,7 +76,7 @@ constexpr Voicing minorVoicings[7][5] {
     { major,      major7,         major9,         major9Sharp11,     major13 },
     { major,      dominant7,      dominant9,      dominant13,        dominant13 }
 };
-} // namespace
+}
 
 int degreeForMidiNote (int midiNote) noexcept
 {
@@ -120,4 +121,4 @@ Chord makeChord (int inputNote, int base, ScaleMode mode, int complexity, Amplit
     chord.size = static_cast<std::size_t> (std::distance (first, std::unique (first, last)));
     return chord;
 }
-} // namespace chordcraft
+}

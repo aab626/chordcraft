@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file implements the ChordCraft plugin processor.
+    Este archivo implementa el procesador del plugin ChordCraft.
 
   ==============================================================================
 */
@@ -28,7 +28,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
                                                   "Complejidad", 1, 5, 1)
     };
 }
-} // namespace
+}
 
 //==============================================================================
 NewProjectAudioProcessor::NewProjectAudioProcessor()

@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file implements the ChordCraft plugin editor.
+    Este archivo implementa el editor del plugin ChordCraft.
 
   ==============================================================================
 */
@@ -40,7 +40,7 @@ void configureKnob (juce::Slider& knob, const juce::String& title, const juce::S
     knob.setWantsKeyboardFocus (true);
     knob.setMouseClickGrabsKeyboardFocus (true);
 }
-} // namespace
+}
 
 //==============================================================================
 void NewProjectAudioProcessorEditor::Knob::paintOverChildren (juce::Graphics& g)
