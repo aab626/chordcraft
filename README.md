@@ -30,5 +30,5 @@ Plugin VST3 para generar acordes a partir de una nota de entrada. Desarrollado c
 
 ## Documentación
 
-- [Guía de uso]()
+- [Guía de uso](docs/uso.md)
 - [Guía de desarrollo](docs/desarrollo.md)
