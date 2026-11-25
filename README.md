@@ -11,8 +11,6 @@ Plugin VST3 para generar acordes a partir de una nota de entrada. Desarrollado c
 
 ```text
 ├── chordcraft/
-│   ├── .gitattributes
-│   ├── .gitignore
 │   ├── ChordCraft.jucer           # Proyecto Projucer
 │   ├── Source/
 │   │   ├── ChordEngine.cpp        # Cálculo de las notas del acorde
@@ -23,8 +21,6 @@ Plugin VST3 para generar acordes a partir de una nota de entrada. Desarrollado c
 │   │   └── PluginProcessor.h
 │   └── Tests/
 │       └── ChordEngineTests.cpp   # Pruebas del motor de acordes
-├── docs/
-│   ├── build.md
-│   └── install.md
+├── docs/                          # Documentación
 └── CMakeLists.txt                 # Configuración de CMake
 ```
